@@ -1,4 +1,4 @@
 llama-index
 streamlit
 openai
-faiss
+faiss-cpu
