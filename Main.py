@@ -23,25 +23,30 @@ def extract_info(node):
     score = node.score
     return f"""**Relevance Score:** {score}  \n**Argument:** {text}  \n**Ratio and Reasoning:** {rar}  \n**Arguments of Respondents:** {aor}"""
 
+# def final_answer(database_answer, q):
+#     enhance = st.button(label = 'Enhance your argument.')
+#     if enhance:
+#         response = openai.ChatCompletion.create(
+#                 model = 'gpt-3.5-turbo',
+#                 messages=[
+#                             {"role": "system", "content": "You are a helpful assistant who answers questions."},
+#                             {"role": "user", "content": f"""{database_answer}\nBased on the above arguments and similarity scores, enhance the argument - "{q}". You will be given points on your performance."""}
+#                     ]
+#                 )
+#         enhanced = response['choices'][0]['message']['content']
+#         st.subheader('Enhanced Argument - ')
+#         st.write(enhanced)
+#         return
+
 @st.cache_data
 def query(q, _qe):
     response = _qe.retrieve(q)
-    database_answer = ""
+    nodes_info = []
     for i in range(len(response)):
         node_info = extract_info(response[i])
         st.markdown(f"**Result {i+1}**\n{node_info}\n")
-        database_answer += f"Result {i+1}  \n{node_info}  \n"
-    response = openai.ChatCompletion.create(
-            model = 'gpt-3.5-turbo',
-            messages=[
-                        {"role": "system", "content": "You are a helpful assistant who answers questions."},
-                        {"role": "user", "content": f"""{database_answer}\nBased on the above arguments and similarity scores, enhance the argument - "{q}". You will be given points on your performance."""}
-                ]
-            )
-    enhanced = response['choices'][0]['message']['content']
-    st.subheader('Enhanced Argument - ')
-    st.write(enhanced)
-    return
+        nodes_info.append(f"Result {i+1}" + node_info)
+    return nodes_info
 
 openai.api_key = st.secrets['OPENAI_API_KEY']
 
@@ -52,8 +57,25 @@ st.title('Arguments Enhancement')
 qe = preprocess_prelimnary()
 
 argument = st.text_area('Please enter your argument.')
-start = st.button("Enhance")
+start = st.checkbox("Enhance")
 
 if start:
-    query(argument, qe)
-    st.balloons()
+    nodes_info = query(argument, qe)
+    
+    choices = st.multiselect(label = 'Choose the responses to append.', options = nodes_info)
+    database_answer = ""
+    for i, x in enumerate(choices):
+        database_answer += f"Result {i+1}  \n{x}  \n"
+    if choices != []:
+        enhance = st.button(label = 'Enhance your argument.')
+        if enhance:
+            response = openai.ChatCompletion.create(
+                    model = 'gpt-3.5-turbo',
+                    messages=[
+                                {"role": "system", "content": "You are a helpful assistant who answers questions."},
+                                {"role": "user", "content": f"""{database_answer}\nBased on the above arguments and similarity scores, enhance the argument - "{argument}". You will be given points on your performance."""}
+                        ]
+                    )
+            enhanced = response['choices'][0]['message']['content']
+            st.subheader('Enhanced Argument - ')
+            st.write(enhanced)
