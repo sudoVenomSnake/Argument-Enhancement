@@ -86,7 +86,7 @@ if start:
         if enhance:
             # st.write(f"""Consider my following argument: {argument}.  \nFollowing the exisiting argument and the reasoning given by the judge improve my argument.  \nThink step by step, identify the variables, make a plan and execute.\nThe argument is this: {nodes_info[nodes_info['Argument Number'] == choice]['Argument'].values[0]}.  \nThe reasoning given by the judge behind the argument is : {nodes_info[nodes_info['Argument Number'] == choice]['Ratio and Reasoning'].values[0]}  \nNow using the given argument and the reasoning improve my argument.  \nStay logical and to the point.""")
             response = openai.ChatCompletion.create(
-                    model = 'gpt-3.5-turbo',
+                    model = 'gpt-4',
                     messages=[
                                 {"role": "system", "content": "You are a smart, a cunning and an experienced lawyer. You are very shrewd and stay logical. You can find faults and improve existing things logically."},
                                 {"role": "user", "content": f"""Consider my following argument: {argument}.\nFollowing the exisiting argument and the reasoning given by the judge improve my argument.\nThink step by step, identify the variables, make a plan and execute.\nThe argument is this: {nodes_info[nodes_info['Argument Number'] == choice]['Argument'].values[0]}.\nThe reasoning given by the judge behind the argument is : {nodes_info[nodes_info['Argument Number'] == choice]['Ratio and Reasoning'].values[0]}\nNow using the given argument and the reasoning improve my argument.\nStay logical and to the point. Based on the recommendation do self reflection, find faults and revise."""}
